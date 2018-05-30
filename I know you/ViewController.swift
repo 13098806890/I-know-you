@@ -251,7 +251,7 @@ class ViewController: UIViewController, UITextFieldDelegate, UICollectionViewDat
     }
 
     func disPlayUpdataStatusAlert(_ block: @escaping ()->()) {
-        let alert = UIAlertController(title: "开始新的一局", message: "更新游戏状态？", preferredStyle:.alert)
+        let alert = UIAlertController(title: "更新来自剪贴板的信息", message: "更新游戏状态？", preferredStyle:.alert)
         alert.addAction(UIAlertAction(title: "更新", style: .destructive, handler:{ action in
             block()
         }))
