@@ -33,9 +33,11 @@ class ViewController: UIViewController, UITextFieldDelegate, UICollectionViewDat
     @IBOutlet weak var inputTextField: UITextField!
     @IBOutlet weak var changeModeButton: UIButton!
     @IBOutlet weak var refreshButton: UIButton!
+    @IBOutlet weak var lockSwitch: UISwitch!
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.lockSwitch.isOn = false
         words = IKYWordsManager.sharedInstance.wordDataWithCount(wordSize * wordSize)
         self.collectionView.register(UINib(nibName: cellIdentifier, bundle: nil), forCellWithReuseIdentifier: cellIdentifier)
         self.collectionView.delegate = self
@@ -102,6 +104,11 @@ class ViewController: UIViewController, UITextFieldDelegate, UICollectionViewDat
         self.self.detectPasteBoard()
     }
 
+    @IBAction func lockStatusChange(_ sender: Any) {
+        self.changeModeButton.isHidden = self.lockSwitch.isOn
+        self.refreshButton.isHidden = self.lockSwitch.isOn
+    }
+
     func getInputWords() -> [String]? {
         let input = self.inputTextField.text
         if input == "" {
@@ -142,7 +149,7 @@ class ViewController: UIViewController, UITextFieldDelegate, UICollectionViewDat
             }
             self.updateCellColor(cell, index: indexPath.row)
         }
-        if mode == .gusser && !self.guessedIndex.contains(indexPath.row){
+        if mode == .gusser && !self.guessedIndex.contains(indexPath.row) && self.lockSwitch.isOn {
             self.displayGuessAlert(block)
         } else {
             block()
@@ -225,6 +232,7 @@ class ViewController: UIViewController, UITextFieldDelegate, UICollectionViewDat
                 for index in 0..<words!.count {
                     self.words[index] = IKYWordData.init(string: words![index])
                 }
+                self.guessedIndex = [Int]()
             }
             if strs.count > 2 {
                 let indexContent = String.init(data: Data.init(base64Encoded: strs[2] as String)!, encoding: String.Encoding.utf8)
@@ -244,7 +252,7 @@ class ViewController: UIViewController, UITextFieldDelegate, UICollectionViewDat
     func detectPasteBoard() {
         if let paste = UIPasteboard.general.string {
             if paste.hasPrefix(pastedboardPrefix) {
-                self.pasteboardContent = paste
+                self.pasteboardContent = paste.trimmingCharacters(in: CharacterSet.init(charactersIn: " \n\r"))
                 self.disPlayUpdataStatusAlert({self.decodeStatusString(str: self.pasteboardContent)})
             }
         }
@@ -254,6 +262,8 @@ class ViewController: UIViewController, UITextFieldDelegate, UICollectionViewDat
         let alert = UIAlertController(title: "更新来自剪贴板的信息", message: "更新游戏状态？", preferredStyle:.alert)
         alert.addAction(UIAlertAction(title: "更新", style: .destructive, handler:{ action in
             block()
+            self.lockSwitch.isOn = true
+            self.lockStatusChange(1)
         }))
         alert.addAction(UIAlertAction(title: "算了", style: .cancel, handler:nil))
         self.present(alert, animated: true, completion: nil)
