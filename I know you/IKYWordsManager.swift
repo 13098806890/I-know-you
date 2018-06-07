@@ -126,7 +126,6 @@ class IKYWordsManager {
         if words.count == 0 {
             return
         }
-        self.words.append(contentsOf: words)
         var setWords = Set(self.words)
         for index in 0..<words.count {
             setWords.remove(words[index])
